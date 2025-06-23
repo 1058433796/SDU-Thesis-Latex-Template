@@ -1,0 +1,333 @@
+\chapter{附录}
+\echapter{Appendix}
+\label{chap6}
+
+本章对工作\ref{chap4}中的学习框架Meta-T提供了理论性分析。
+
+\section{光滑性证明}
+\esection{Proof of Smoothness}
+\label{chap6_1}
+
+给定一个大小为$n$的元数据集$\{(\mathbf{x}_1^l, \mathbf{y}_1^l),...,(\mathbf{x}_n^l, \mathbf{y}_n^l)\}$，本文学习框架中的元损失可以写成：
+\begin{equation}
+    \label{eq:app_1}
+         L_{\rm meta}(\mathbf{w}^*({\Theta}))  =
+     \frac{1}{n} \sum\limits_{i=1}^n H(\mathbf{y}_i^l, f(\mathbf{x}_i^l; \mathbf{w}^*({\Theta}))),
+\end{equation}
+给定一个无标签的数据集$\{\mathbf{x}_1,...,\mathbf{x}_{(\mu \times n)}\}$，其大小为$\mu \times n$，本文学习框架中的训练损失可以写成：
+\begin{equation}
+    \begin{aligned}
+        \label{eq:app_2}
+        L_{train}(\mathbf{w},\Theta) &= L_u(\mathbf{w},\Theta) = 
+        \frac{1}{n\mu} \sum\limits_{i=1}^{n\mu} \ell_{\mathbf{x}_i}(\mathbf{w}, \Theta) \\ &=
+        \frac{1}{n\mu} \sum\limits_{i=1}^{n\mu} \mathbbm{1}(\max(f(\mathcal{A}^w(\mathbf{x}_i; \mathbf{w}))) > \mathcal{V}_i(\mathbf{w}, \Theta))  \cdot   H(\hat{\mathbf{y}}_i, f(\mathcal{A}^s(\mathbf{x}_i; \mathbf{w}))),
+    \end{aligned}
+\end{equation}
+其中$\mathbf{\hat y}_i$是模型对样本$\mathbf{x}_i$弱增强版本的预测结果，且$\mathcal{V}_i(\mathbf{w}, \Theta) = \mathcal{V}(g(f(\mathbf{x}_i; \mathbf{w})), \overline {\rm p}_c^t; \Theta)$。在实际训练过程中，采用了替代函数$\mathcal{S}(x) = \frac{1}{1 + \exp^{- \beta x}}$来替代指示函数，因此公式 ~(\ref{eq:app_2})可以写成：
+\begin{equation}
+    \label{eq:app_2new}
+    L_{train}(\mathbf{w},\Theta) = \frac{1}{n\mu} \sum\limits_{i=1}^{n\mu} \ell_{\mathrm{x}_i}(\mathbf{w}, \Theta) =
+    \frac{1}{n\mu} \sum\limits_{i=1}^{n\mu} \mathcal{S}_i(\mathbf{w}, \Theta) \cdot   H(\hat{\mathbf{y}}_i, f(\mathcal{A}^s(\mathbf{x}_i; \mathbf{w}))).
+\end{equation}
+其中，替代函数$\mathcal{S}(\cdot)$的输入为$(\max(f(\mathcal{A}^w(\mathbf{x}_i; \mathbf{w}))) > \mathcal{V}_i(\mathbf{w}, \Theta))$。
+
+\begin{proof}
+首先，公式~(\ref{eq:step2})中TGN网络参数$\Theta$更新的反向传播可以写成：
+\begin{equation}
+\begin{aligned}
+\label{eq:app_eq_smooth}
+     &   \frac{1}{n} \sum\limits_{i=1}^{n} \nabla_{\Theta} H_i^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{\Theta^{(t)}} \\
+     = & \frac{1}{n} \sum\limits_{i=1}^{n} \frac{\partial H_i^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \Big{|}_{\mathbf{\hat  w}^{(t)}} \sum\limits_{j=1}^{n\mu}
+     \frac{\partial \mathbf{\hat w}^{(t)}(\Theta)}
+            {\partial \mathcal{S}_j(\mathbf{w}^{(t)}; \Theta)} \,
+     \frac{\partial \mathcal{S}_j(\mathbf{w}^{(t)}; \Theta)}
+            {\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)} \,
+     \frac{\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}} \\
+     = & \frac{-\alpha}{n^2\mu} \sum\limits_{i=1}^{n} \frac{\partial H_i^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \Big{|}_{\mathbf{\hat  w}^{(t)}}  \sum\limits_{j=1}^{n\mu} \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}}
+     \Big{|}_{\mathbf{w}^{(t)}}
+     \frac{\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}} \\
+     = & \frac{- \alpha}{n\mu} \sum\limits_{j=1}^{n\mu} 
+     \bigg{(}
+     \frac{1}{n} \sum\limits_{i=1}^{n} \frac{\partial H_i^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \Big{|}_{\mathbf{\hat  w}^{(t)}}^T \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \Big{|}_{\mathbf{w}^{(t)}}
+     \bigg{)} \frac{\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}.
+\end{aligned}
+\end{equation}
+让$G_{ij} = \frac{\partial H_i^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \big{|}_{\mathbf{\hat  w}^{(t)}}^T \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \big{|}_{\mathbf{w}^{(t)}}$，同时将$G_{ij}$带入到公式~(\ref{eq:app_eq_smooth})中，可得到
+\begin{equation}
+    \label{eq:eq_Gij}
+    \Theta^{(t+1)} = \Theta^{(t)} + \frac{\alpha\beta}{n\mu}
+    \sum\limits_{j=1}^{n\mu}
+    \bigg{(}
+    \frac{1}{n} \sum\limits_{i=1}^{n} G_{ij}
+    \bigg{)}
+     \frac{\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}.
+\end{equation}
+参数$\Theta$关于元损失的梯度可以写成：
+\begin{equation}
+        \begin{aligned}
+        \label{eq:eq_firstOrder}
+            & \nabla_{\Theta} H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{\Theta^{(t)}}  \\
+            = & -\frac{\alpha}{n\mu} \sum\limits_{j=1}^{n\mu} 
+            \bigg{(}
+                \frac{\partial H^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \Big{|}_{\mathbf{\hat  w}^{(t)}}^T \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \Big{|}_{\mathbf{w}^{(t)}}
+            \bigg{)}
+            \frac{\partial \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}.
+    \end{aligned}
+\end{equation}
+令$\mathcal{V}_j(\Theta) = \mathcal{V}_j(\mathbf{w}^{(t)}; \Theta)$，同时引入共识~(\ref{eq:eq_Gij})中的$G_{ij}$。对等式~(\ref{eq:eq_firstOrder})两边同时求导，则有：
+\begin{equation}
+    \begin{aligned}
+        \label{eq:eq_secondOrder}
+        & \nabla_{\Theta^2}^2 H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{\Theta^{(t)}}  \\
+        = & -\frac{\alpha}{n\mu} \sum\limits_{j=1}^{n\mu}
+        \bigg{[}
+        \frac{\partial}{\partial \Theta} (G_{ij}) \Big{|}_{\Theta^{(t)}} \frac{\partial \mathcal{V}_j(\Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}} 
+        +
+        (G_{ij}) \frac{\partial^2 \mathcal{V}_j(\Theta)}{\partial ^2 \Theta} \Big{|}_{\Theta^{(t)}}
+        \bigg{]}.
+    \end{aligned}
+\end{equation}
+公式~(\ref{eq:eq_secondOrder})右侧的第一项可以写成如下形式：
+\begin{equation}
+    \begin{aligned}
+    \label{eq:app_second_firstTerm}
+    & \left\|  
+        \frac{\partial}{\partial \Theta} (G_{ij}) \Big{|}_{\Theta^{(t)}} \frac{\partial \mathcal{V}_j(\Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}   \right\|   \\
+    \leq & \, \delta
+    \left\|  
+        \frac{\partial}{\partial \mathbf{\hat w}} 
+        \bigg{(} 
+            \frac{\partial H^{\rm meta} (\mathbf{\hat w})}{\partial \Theta} \Big{|}_{\Theta^{(t)}}
+        \bigg{)} \Big{|}_{\mathbf{\hat w}^{(t)}}^T 
+        \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \Big{|}_{\mathbf{w}^{(t)}}     \right\| \\
+    = & \, \delta
+    \left\|
+        \frac{\partial}{\partial \mathbf{\hat w}}
+        \bigg{(} 
+            \frac{\partial H^{\rm meta} (\mathbf{\hat w})}{\partial \mathbf{\hat w}} \Big{|}_{\mathbf{\hat w}^{(t)}} \,
+            \frac{-\alpha}{n\mu} \sum\limits_{k=1}^{n\mu} 
+            \frac{\partial \ell_{\mathbf{x}_k}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})}
+            \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}}
+             \Big{|}_{\mathbf{w}^{(t)}} \frac{\partial \mathcal{V}_k(\Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}
+        \bigg{)} \Big{|}_{\mathbf{\hat w}^{(t)}}^T 
+         \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \Big{|}_{\mathbf{w}^{(t)}}   \right\|   \\
+    = & \, \delta
+    \left\|
+        \bigg{(} 
+            \frac{\partial^2 H^{\rm meta} (\mathbf{\hat w})}{\partial \mathbf{\hat w}^2} \Big{|}_{\mathbf{\hat w}^{(t)}} \,
+            \frac{-\alpha}{n\mu} \sum\limits_{k=1}^{n\mu} 
+            \frac{\partial \ell_{\mathbf{x}_k}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})}
+            \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}}
+             \Big{|}_{\mathbf{w}^{(t)}} \frac{\partial \mathcal{V}_k(\Theta)}{\partial \Theta} \Big{|}_{\Theta^{(t)}}
+        \bigg{)} \Big{|}_{\mathbf{\hat w}^{(t)}}^T 
+         \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \Big{|}_{\mathbf{w}^{(t)}}  
+     \right\|   \\
+     \leq & \, 
+     \alpha L \delta^2 \phi^2 \zeta^2,
+    \end{aligned}
+\end{equation}
+因为$\left\| \frac{\partial H(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \big{|}_{\mathbf{\hat  w}^{(t)}}^T \right\| \leq \rho,
+\left\| \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})}
+\right\| \leq \phi,
+\left\|
+\frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \big{|}_{\mathbf{w}^{(t)}}
+\right\| \leq \zeta,
+\left\|
+\frac{\partial^2 \mathcal{V}_j(\Theta)}{\partial ^2 \Theta} \Big{|}_{\Theta^{(t)}}
+\right\| \leq \mathcal{B}$存在，上述等式（不等式）成立。
+公式~(\ref{eq:eq_secondOrder})右侧的第二项可以写成如下形式：
+\begin{equation}
+    \begin{aligned}
+        \label{eq:app_second_secondTerm}
+          \left\| (G_{ij}) \frac{\partial^2 \mathcal{V}_j(\Theta)}{\partial ^2 \Theta} \Big{|}_{\Theta^{(t)}}  \right\| 
+         % = & \left\| 
+         % \frac{\partial H^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \big{|}_{\mathbf{\hat  w}^{(t)}}^T 
+         % \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \big{|}_{\mathbf{w}^{(t)}} \frac{\partial^2 \mathcal{V}_j(\Theta)}{\partial ^2 \Theta} \Big{|}_{\Theta^{(t)}} 
+         % \right\|   \\
+          = & \left\| 
+         \frac{\partial H^{\rm meta}(\mathbf{\hat w})}{\partial {\mathbf{\hat  w}}} \big{|}_{\mathbf{\hat  w}^{(t)}}^T 
+         \frac{\partial \ell_{\mathbf{x}_j}(\mathcal{S}_j(\mathbf{w}))}{\partial \mathcal{S}_j(\mathbf{w})} \, \frac{\partial \mathcal{S}_j(\mathbf{w})}{\partial \mathbf{w}} \big{|}_{\mathbf{w}^{(t)}} \frac{\partial^2 \mathcal{V}_j(\Theta)}{\partial ^2 \Theta} \Big{|}_{\Theta^{(t)}} 
+         \right\| \\
+         \leq & \, \rho \phi \zeta \mathcal{B}.
+    \end{aligned}
+\end{equation}
+结合公式~(\ref{eq:app_second_firstTerm})和公式~(\ref{eq:app_second_secondTerm})，则有：
+\begin{equation}
+\left\|
+    \nabla_{\Theta^2}^2 H_i^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{\Theta^{(t)}}
+    \right\|  \leq 
+    \phi \zeta (\alpha L \delta^2 \phi \zeta + \rho \mathcal{B}).
+\end{equation}
+令${\hat L} = \phi \zeta (\alpha L \delta^2 \phi \zeta + \rho \mathcal{B})$，根据拉格朗日中值定理，则有：
+\begin{equation}
+    \left\| 
+    \nabla {L_{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta_1))} - 
+    \nabla {L_{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta_2))}
+    \right\|
+    \leq {\hat L} 
+     \left\| 
+        \Theta_1 - \Theta_2
+        \right\|, \, \text{for all} \, \Theta_1, \Theta_2,
+\end{equation}
+其中$\nabla {L_{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta_1))} = \nabla_\Theta {L_{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta))}\Big{|}_{\Theta_1}$。
+\end{proof}
+
+
+
+\section{收敛性证明}
+\esection{Proof of Convergence}
+\label{chap6_2}
+
+
+\begin{proof}
+元网络的参数在第$t$步中的更新可以写成：
+\begin{equation}
+     \Theta^{(t+1)} = \Theta^{(t)} - \beta \frac{1}{n} \sum\limits_{i=1}^n
+     \nabla_\Theta H_i^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{\Theta^{(t)}}. 
+\end{equation}
+在元数据集中均匀采样出一个小批量的元数据 $\mathrm{B}_t$，上述式子可以写成：
+\begin{equation}
+     \Theta^{(t+1)} = \Theta^{(t)} - \beta_t \Big{[}
+     \sum\limits_{i=1}^n
+     \nabla_\Theta H_i^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) + \varepsilon^{(t)} \Big{]}, 
+\end{equation}
+其中，$\varepsilon^{(t)} =  \nabla_\Theta H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta)) \Big{|}_{{\rm B}_t} - \nabla_\Theta H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta))$。值得注意的是$\varepsilon^{(t)}$的期望满足$\mathbbm{E}[\varepsilon^{(t)}]=0$，且其方差是有限的。
+现在考虑
+\begin{equation}
+   \begin{aligned}
+   \label{eq:eq26}
+       & H^{\rm meta}(\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \\
+    = &  \, \underbrace{H^{\rm meta}(\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t +1 )}))}_{\rm term 1} +
+    \underbrace{H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)}))}_{\rm term 2}.
+   \end{aligned}
+\end{equation}
+
+对于公式~(\ref{eq:eq26})中的${\rm term 1}$，由于定理\ref{lam:lemma1}，则有：
+\begin{equation}
+    \begin{aligned}
+        & H^{\rm meta}(\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t+1)})) \\
+    \leq & \, 
+    \left \langle  
+    \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t+1)})), \mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)}) - \mathbf{\hat w}^{(t)}(\Theta^{(t+1)}) \right \rangle + \frac{L}{2}
+    \left \|  
+     \mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)}) - \mathbf{\hat w}^{(t)}(\Theta^{(t+1)})
+    \right \|_2^2.
+    \end{aligned}
+\end{equation}
+根据公式\ref{eq:step1},\ref{eq:step3},\ref{eq:app_2new}，$\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)}) - \mathbf{\hat w}^{(t)}(\Theta^{(t+1)}) = -\alpha_t \frac{1}{n}\sum\nolimits_{i=1}^n \mathcal{S}(\mathbf{w}^{(t+1)}; \Theta^{(t+1)}) \nabla_{\mathbf{w}} H(\mathbf{w}) \Big{|}_\mathbf{w}^{(t+1)}$成立。则有：
+\begin{equation}
+\label{eq:term1}
+    \left\|
+     H^{\rm meta}(\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t +1 )}))    \right\|
+    \leq \alpha_t \rho^2 + \frac{1}{2} L \alpha_t \rho^2
+    = \alpha \rho^2 (1 + \frac{\alpha_t L}{2})
+\end{equation}
+由于$\left\| \frac{\partial H_j(\mathbf{w})}{\partial \mathbf{w}} \big{|}_{\mathbf{\hat w}^{(t)}}\right\| \leq \rho, 
+\left\| \frac{\partial H_i^{\rm meta}(\mathbf{w})}{\partial \mathbf{\hat w}} \big{|}_{\mathbf{\hat w}^{(t)}}^T \right\| \leq \rho$，上述式子成立。
+
+
+对于公式~(\ref{eq:eq26})中的${\rm term 2}$，由于定理\ref{lam:lemma1}中证明了$\nabla H_{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta))$是Lipschitz连续的。则有：
+\begin{equation}
+    \begin{aligned}
+    \label{eq:term2}
+    & H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \\
+    \leq & \,  \left \langle  
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \Theta^{(t+1)} - \Theta^{(t)}
+     \right \rangle  + \frac{L}{2} 
+    \left\| \Theta^{(t+1)} - \Theta^{(t)} \right\|_2^2  \\
+    = & \left \langle  
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), -\beta_t 
+    \Big{[}  H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) + \varepsilon^{(t)}
+    \Big{]}
+     \right \rangle  + \frac{L \beta_t^2}{2} \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) + \varepsilon^{(t)} \right\|_2^2 \\
+     = & -(\beta_t - \frac{L \beta_t^2}{2}) \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2 +
+     \frac{L \beta_t^2}{2} \left\| \varepsilon^{(t)} \right\|_2^2 - (\beta_t - L\beta_t^2) \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle.
+    \end{aligned}
+\end{equation}
+累加上述两个公式~(\ref{eq:term1}), ~(\ref{eq:term2})，公式~(\ref{eq:eq26})可以被写成
+\begin{equation}
+    \begin{aligned}
+      &  H^{\rm meta}(\mathbf{\hat w}^{(t+1)}(\Theta^{(t+1)})) - 
+    H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \\
+    \leq & \, \alpha \rho^2 (1 + \frac{\alpha_t L}{2}) - (\beta_t - \frac{L \beta_t^2}{2}) \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2 +
+     \frac{L \beta_t^2}{2} \left\| \varepsilon^{(t)} \right\|_2^2 - \\ & \quad\quad\quad\quad\quad\quad\quad (\beta_t - L\beta_t^2) \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle. 
+    \end{aligned}
+\end{equation}
+对上述式子进行整合，则有
+\begin{equation}
+    \begin{aligned}
+        & (\beta_t - \frac{L \beta_t^2}{2}) \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2  \\
+        \leq & \, \alpha \rho^2 (1 + \frac{\alpha_t L}{2}) - (\beta_t - \frac{L \beta_t^2}{2}) \left\| \nabla H^{\rm meta} \big{(} \mathbf{\hat w}^{(t)}(\Theta^{(t)}) \big{)} \right\|_2^2 +  \frac{L \beta_t^2}{2} \left\| \varepsilon^{(t)} \right\|_2^2 - \\ &  \quad\quad\quad\quad\quad(\beta_t - L\beta_t^2) \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle. 
+    \end{aligned}
+\end{equation}
+基于上述不等式，对两侧进行整合，则有
+\begin{equation}
+    \begin{aligned}
+    \label{eq:eq32}
+        &  \sum\limits_{t=1}^T (\beta_t - \frac{L \beta_t^2}{2}) \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2
+        \\
+        \leq & \, H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)})) 
+        - 
+        H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)}))  + \\
+        & \quad \quad \quad \sum\limits_{t=1}^T \alpha \rho^2 (1 + \frac{\alpha_t L}{2}) -
+        \sum\limits_{t=1}^T (\beta_t - L\beta_t^2) \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle 
+        \, + \,
+        \frac{L}{2} \sum\limits_{t=1}^T \left\| \varepsilon^{(t)} \right\|_2^2 \\
+        \leq & \, H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)}))  + \sum\limits_{t=1}^T \alpha \rho^2 (1 + \frac{\alpha_t L}{2}) -
+        \sum\limits_{t=1}^T (\beta_t - L\beta_t^2) \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle 
+        +
+        \frac{L}{2} \sum\limits_{t=1}^T \left\| \varepsilon^{(t)} \right\|_2^2.
+    \end{aligned}
+\end{equation}
+将公式~(\ref{eq:eq32})两侧对$\varepsilon^{(N)}$求期望，则有
+\begin{equation}
+    \begin{aligned}
+ \sum\limits_{t=1}^T (\beta_t - \frac{L \beta_t^2}{2}) \mathop{\mathbbm{E}}\limits_{\varepsilon^{(N)}} \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2 
+        \leq   H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)})) + \sum\limits_{t=1}^T \alpha \rho^2 (1 + \frac{\alpha_t L}{2}) + \frac{L\sigma^2}{2} \sum\limits_{t=1}^T \beta_t^2,
+    \end{aligned}
+\end{equation}
+因为$\mathop{\mathbbm{E}}\limits_{\varepsilon^{(N)}} \left\langle H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})), \varepsilon^{(t)}  \right\rangle=0$ 和 $\mathbbm{\left\| \varepsilon^{(t)} \right\|_2^2} \leq \sigma^2$存在，其中$\sigma^2$ 表示$\varepsilon^{(t)}$的方差。
+
+最终，通过推断可得
+\begin{equation}
+    \begin{aligned}
+        \mathop{\min}\limits_{t} & \, \mathbbm{E} \Big{[} \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2  \Big{]}  \leq
+        \frac{\sum\nolimits_{t=1}^T (\beta_t - \frac{L \beta_t^2}{2}) \mathop{\mathbbm{E}}\limits_{\varepsilon^{(N)}} \left\| \nabla H^{\rm meta}(\mathbf{\hat w}^{(t)}(\Theta^{(t)})) \right\|_2^2 }{\sum\nolimits_{t=1}^T (\beta_t - \frac{L \beta_t^2}{2})}  \\
+        \leq & \, \frac{1}{\sum\nolimits_{t=1}^T (2\beta_t - L\beta_t^2)} \Big{[}
+        2H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)})) + \sum\limits_{t=1}^T \alpha \rho^2 (2 + \alpha_t L) + L\sigma^2 \sum\limits_{t=1}^T \beta_t^2
+        \Big{]} \\
+        \leq & \, \frac{1}{\sum\nolimits_{t=1}^T \beta_t}  \Big{[}
+        2H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)})) + \sum\limits_{t=1}^T \alpha \rho^2 (2 + \alpha_t L) + L\sigma^2 \sum\limits_{t=1}^T \beta_t^2
+        \Big{]} \\
+        \leq & \, \frac{1}{T \beta_t} \Big{[}
+        2H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)})) +  
+        \alpha_1 \rho^2 T (2 +  L) + 
+        L\sigma^2 \sum\limits_{t=1}^T \beta_t^2
+        \Big{]} \\
+        = & \, \frac{2H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)}))}{T} \, \frac{1}{\beta_t} + \frac{2  \alpha_1 \rho^2  (2 +  L)}{\beta_t}
+        + \frac{L\sigma^2}{T} \sum\limits_{t=1}^T \beta_t \\
+        \leq & \, \frac{2H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)}))}{T} \, \frac{1}{\beta_t} + \frac{2  \alpha_1 \rho^2  (2 +  L)}{\beta_t} + L\sigma^2  \beta_t \\
+        = & \, \frac{H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)}))}{T} \max\{L, \frac{\sigma\sqrt{T}}{\rm c}\} + \min\{1, \frac{k}{T}\}\max\{L, \frac{\sigma\sqrt{T}}{\rm c}\}\rho^2(2+L) + L\sigma^2 \min\{\frac{1}{L}, \frac{\rm c}{\sigma\sqrt{T}}\} \\
+        \leq & \, \frac{\sigma H^{\rm meta}(\mathbf{\hat w}^{(1)}(\Theta^{(1)}))}{{\rm c} \sqrt{T}} + \frac{k\sigma\rho^2(2+L)}{{\rm c} \sqrt{T}} + \frac{L\sigma{\rm c}}{\sqrt{T}} = \mathcal{O}(\frac{1}{\sqrt{T}}).
+    \end{aligned}
+\end{equation}
+因此，当满足一定温和条件时，本文的学习算法能在$T$步内实现$\min_{0 \leq t \leq T} \mathbbm{E} \Big{[} \left\| \nabla H^{\rm meta}(\Theta^{(t)}) \right\|_2^2  \Big{]} \leq \mathcal{O}(\frac{1}{\sqrt{T}})$。
+
+\end{proof}
+
+
+
+
+
+
+
+
+
+

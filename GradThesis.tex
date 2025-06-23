@@ -1,0 +1,167 @@
+% !Mode:: "TeX:UTF-8"
+%!TEX program = xelatex
+\expandafter\def\csname CTEX@spaceChar\endcsname{\hspace{1em}} %add by x
+\documentclass[twoside,openany]{SDUthesis}
+
+% 控制位于页面顶部或底部的表格与正文的距离为 5pt
+\setlength{\textfloatsep}{5pt plus 1pt minus 2pt}
+
+% 控制位于页面内部的表格与正文的距离为 5pt
+\setlength{\intextsep}{5pt plus 1pt minus 2pt}
+
+%改动：% 在此添加 geometry 设置 改成A4要求
+\usepackage[a4paper, top=2.8cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+
+%  原本的
+% \newcommand{\makeheadrule}{%页眉设置
+%  \makebox[0pt][l]{\hspace{-0.2cm}\rule[0.55\baselineskip]{\linewidth}{0.6pt}}% 下线设置
+%  \rule[0.7\baselineskip]{\headwidth}{0pt}} %上线设置
+
+% 重定义 \makeheadrule 以实现奇数页平移，偶数页不平移
+\newcommand{\makeheadrule}{%
+    \ifodd\value{page}  % 如果是奇数页
+        \makebox[0pt][l]{\rule[0.55\baselineskip]{\linewidth}{0.6pt}} % 向左平移
+    \else  % 如果是偶数页
+        \makebox[0pt][l]{\hspace{-0.2cm}\rule[0.55\baselineskip]{\linewidth}{0.6pt}}  % 不平移
+    \fi
+    \rule[0.7\baselineskip]{\headwidth}{0pt}  % 上线
+}
+ 
+\renewcommand{\headrule}{%
+{
+ \if@fancyplain\let\headrulewidth\plainheadrulewidth\fi
+  \makeheadrule}}
+\makeatother
+
+
+% \usepackage{amsmath}
+\renewcommand\theequation{\arabic{chapter}-\arabic{equation}}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage{gbt7714}
+\renewcommand\thefootnote{\ding{\numexpr171+\value{footnote}}}
+\usepackage{threeparttable}
+
+
+
+\makeatletter
+\newcommand{\figcaption}{\def\@captype{figure}\caption}
+\newcommand{\tabcaption}{\def\@captype{table}\caption}
+\makeatother
+
+\setlength{\abovecaptionskip}{0pt}
+\setlength{\belowcaptionskip}{0pt}
+
+\usepackage[figuresright]{rotating} %add by x
+\usepackage{arydshln} %add by x
+\usepackage[OT1]{fontenc} %add by x
+\setmainfont{Times New Roman} %add by dss
+
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp} %add by x
+\newcolumntype{C}[1]{>{\PreserveBackslash\centering}p{#1}}
+\newcolumntype{R}[1]{>{\PreserveBackslash\raggedleft}p{#1}}
+\newcolumntype{L}[1]{>{\PreserveBackslash\raggedright}p{#1}}
+
+
+\usepackage{mathrsfs}
+\usepackage{pdfpages}
+\usepackage{changepage}%160311整段缩进
+
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{graphicx}
+% \usepackage{subfig}
+\usepackage{longtable}
+\usepackage{epstopdf}
+
+\usepackage{bicaption}
+\usepackage[justification=centering]{caption} % 实现中英文图表的标题居中
+\usepackage{subcaption}
+
+\usepackage{bm}
+\usepackage{bbm}
+
+\usepackage{multirow}
+\usepackage{bbding}
+
+
+\captionsetup[figure][bi-second]{name=Fig.}
+\captionsetup[table][bi-second]{name=Tab.}
+
+\newtheorem{lemma}{引理}
+\newtheorem{theorem}{定理}
+\setlength{\bibsep}{0.3pt} 
+
+\begin{document}
+\raggedbottom
+
+% 封面
+% \includepdfmerge{./Chapters/封面.pdf,-} 
+\includepdfmerge{./Chapters/封面-非匿名.pdf,-}
+% \includepdfmerge{./Chapters/封面扉页.pdf,-}
+\includepdfmerge{./Chapters/原创性声明扫描件.pdf,-} 
+%需要等学院下发titlePage，然后添加 by susie
+
+% 版权声明
+% \makeOSandCPRTpage %提交时要加
+% \includepdfmerge{copyrights.pdf,-}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 论文部分开始
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SDUfrontmatter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 中文摘要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{./Chapters/abstractC}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 英文摘要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{./Chapters/abstractE}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 目录页
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SDUcontents
+\SDUEcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 正文内容部分开始
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SDUmainmatter
+\input{./Chapters/chap1}
+\input{./Chapters/chap2}
+\input{./Chapters/chap3}
+\input{./Chapters/chap4}
+\input{./Chapters/chap5}
+% \input{./Chapters/chap6_appendix}
+\SDUbackmatter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ereference{Reference}
+\bibliographystyle{gbt7714-numerical}
+\bibliography{bib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 致谢页
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{./Chapters/thanks}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 发表论文目录
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{./Chapters/publications}
+% \input{./Chapters/projects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 学位论文评阅及答辩情况表，两种方式
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\includepdfmerge{./Chapters/论文评阅及答辩情况表扫描件.pdf,-} %需要等ending paper下发然后添加 by susie
+% \includepdfmerge{./Chapters/page_last.pdf,-} 
+
+
+
+\end{document}
